@@ -1,0 +1,95 @@
+initial approach:
+
+work towards enabling some key, simple use cases:
+get me all entities that fulfill contraint
+
+initial constraints:
+1. all products
+2. style collections
+3. clearance (discontinued, with stock)
+4. color
+
+NO NULL
+junction tables?
+
+create some sort of test data harness
+need to generate test data that matches real product data
+in easy to insert format
+(files can be arbitrary)
+
+use just postgresql
+sketch out entity diagram for schema
+write raw sql queries
+benchmark for performance
+
+-----------------------
+| initial exploration |
+-----------------------
+
+what's the problem?
+
+the CAMS entity id is called an 'article master'
+the 'article master' is ???? supposed to be ???? the SKU without the backing
+code
+
+The problem is relating the article master in CAMS to the same resource in MPMS
+
+This is a problem because we can't confidently know what a 'UPC' coming in to
+our post products endpoint, refers to 
+
+invariants:
+1. mohawk has a shopify ecommerce account
+  -- we are not in a position to remove this
+  -- all CC transactions must occur is this account (contract)
+
+2. mohawk has an internal fulfillment warehouse platform (CAMS)
+  -- this is the source of truth for fulfillments and inventory
+
+3. mohawk polls our api for orders GET /orders
+
+4. CAMS sends product inventory to POST /products
+  -- every time we receive this message, it is the source of truth for all currently
+  -- active saleable products
+
+5. Mohawk has their own PMS (MPMS)
+  -- this does not communicate with CAMS
+  -- it is the source of truth for d
+
+as part of the preliminary requirements, we must ensure that we are updating
+shopify with teh correct article master from CAMS/MPMS
+
+mohawk currently uses a shopify theme as the frontend
+
+mohawk has 'the mohawk kiosk' that relies on shopify's data for it's source of
+truth
+
+
+problems with shopify/shopify schema:
+
+liquid-templates performance is bad
+
+merchandiseability w/r/t filtering, sorting
+
+cross-cutting merchandiseability concerns
+
+ability + facility
+
+project functional requirements/needs: 
+
+high lighthouse score (90+)
+
+mobile focused
+
+backing database
+
+display logic
+
+
+----
+
+we can't achieve our businees goals using shopify liquid
+thus:
+we are going to create our own storefront solution
+
+currently we have a storefront
+should we move forward with that storefront?

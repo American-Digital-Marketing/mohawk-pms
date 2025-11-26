@@ -1,0 +1,198 @@
+/// E-Commerce Entity Component Database Schema
+/// 
+/// Project: American Digital Marketing Product Management Platform
+/// Author: Morgan Moore
+/// Created: November 26, 2025
+/// Release: November 26, 2025
+/// Version: 0.1.0
+/// Major: 0; Minor: 1; Patch: 0
+/// 
+/// Description:
+/// This schema implements an entity-component-system (ECS) architecture
+/// for a flexible e-commerce platform. Inspired by Sketchpad (1963) and
+/// The Dark Engine (1998). The intention of this database is to be fully
+/// extensible while still maintaining the benefits of a SQL database (ACID).
+/// operations, dynamic product attributes, and extensible marketing
+/// campaign management for digital marketing operations.
+///
+/// Key Features:
+/// * Entity-component pattern for flexible content modeling
+/// * Multi-channel order processing and fulfillment tracking
+/// * Marketing campaign attribution and analytics
+/// * Inventory management across multiple warehouses
+/// * Customer segmentation and personalization capabilities
+///
+/// Notes:
+/// * Plural tables indicate components
+/// * The id 0 is reserved across all tables as a NULL sentinel value
+/// * Consequently, _all columns_ have the NOT NULL constraint
+/// * A combination of 2 (or more?) tables indicates a junction table for a many-to-many relationship
+/// * All tables have 'created_at' and 'updated_at' columns
+/// * All timestamps use EST
+/// * Soft deletes implemented via 'deleted_entities' table membership
+/// * Written for PostgreSQL
+///
+/// A Note About Time
+/// Currently I'm investigating using
+/// [pg_bitemporal](https://github.com/hettie-d/pg_bitemporal)
+/// for time based concerns. The timestamp fields mentioned above are being
+/// removed for prototyping concerns, but are implied and should likely be
+/// included in the final product.
+
+// consider renaming to simply products?
+// no, better to err too general with names
+Table entities {
+  id bigserial [pk]
+}
+
+Table entity_feature {
+  entity_id  bigserial [pk]
+  feature_id bigserial [pk]
+}
+Ref: entity_feature.entity_id - entities.id
+Ref: entity_feature.feature_id - features.id
+
+Table patterns {
+  id        bigserial [pk]
+  entity_id bigserial [unique]
+  name      string    [unique]
+}
+Ref: patterns.entity_id - entities.id
+
+Table styles {
+  id        bigserial [pk]
+  entity_id bigserial [unique]
+  name      string    [unique]
+}
+Ref: styles.entity_id - entities.id
+
+Table descriptions {
+  id        bigserial [pk]
+  entity_id bigserial
+  contents text
+}
+Ref: entities.id < descriptions.entity_id
+
+Table features {
+  id        bigserial [pk]
+  entity_id bigserial
+}
+Ref: entities.id < features.entity_id
+
+Table inventory_levels {
+  id         bigserial [pk]
+  entity_id  bigserial [unique]
+  stock      integer
+}
+Ref: entities.id - inventory_levels.entity_id
+
+Table discontinued_products {
+  entity_id bigserial [pk]
+}
+Ref: entities.id - discontinued_products.entity_id
+
+// prices are per-entity, so they have an entity id
+Table prices {
+  id          bigserial [pk]
+  entity_id   bigserial
+  // the price value, in cents (or equivalent smallest unit of currency)
+  // this is to avoid floating point errors, (taken from stripes db schema)
+  value       integer
+  currency_id bigserial
+}
+Ref: prices.entity_id - entities.id
+Ref: currencies.id < prices.currency_id
+
+Table currencies {
+  id   bigserial [pk]
+  code enum // tbd on datatype here. maybe should just be text, varchar(3)?
+}
+
+// this is a junction table
+Table featured_images {
+  entity_id bigserial [pk]
+  image_id  bigserial [pk]
+}
+Ref: featured_images.image_id < images.id
+Ref: featured_images.entity_id - entities.id
+
+Table lifestyle_images {
+  entity_id bigserial [pk]
+  image_id  bigserial [pk]
+}
+Ref: lifestyle_images.image_id < images.id
+Ref: lifestyle_images.entity_id - entities.id
+
+Table color_swatches {
+  id                     bigserial [pk]
+  entity_id              bigserial [unique]
+  merchandised_color_id  bigserial
+}
+Ref: color_swatches.entity_id - entities.id
+Ref: color_swatches.merchandised_color_id > merchandised_colors.id
+
+Table images {
+  id      bigserial [pk]
+  file_id bigserial
+}
+Ref: images.file_id > files.id
+
+Table files {
+  id     bigserial [pk]
+  source string    [unique]
+}
+
+Table primary_colors {
+  id   bigserial [pk]
+  name string    [unique]
+}
+
+Table color_themes {
+  id   bigserial [pk]
+  name string    [unique]
+}
+
+Table color_theme_primary_color {
+  color_theme_id   bigserial [pk]
+  primary_color_id bigserial [pk]
+}
+Ref: color_theme_primary_color.color_theme_id < color_themes.id
+Ref: color_theme_primary_color.primary_color_id < primary_colors.id
+
+Table merchandised_colors {
+  id               bigserial [pk]
+  primary_color_id bigserial
+  color_theme_id   bigserial
+  name             string    [unique]
+}
+Ref: merchandised_colors.color_theme_id > color_themes.id
+Ref: merchandised_colors.primary_color_id > primary_colors.id
+
+// a better way than separate tables. captures the inherent three part
+// relationship between entities and color types
+// actually this might be worse
+// less flexible
+Table entity_colors {
+  entity_id             bigserial [pk]
+  color_theme_id        bigserial [pk]
+  primary_color_id      bigserial [pk]
+  merchandised_color_id bigserial [pk]
+}
+Ref: entity_colors.entity_id - entities.id
+Ref: entity_colors.color_theme_id > color_themes.id
+Ref: entity_colors.primary_color_id > primary_colors.id
+Ref: entity_colors.merchandised_color_id > merchandised_colors.id
+
+Table entity_color_theme {
+  entity_id      bigserial [pk]
+  color_theme_id bigserial [pk]
+}
+Ref: entities.id - entity_color_theme.entity_id
+Ref: color_themes.id - entity_color_theme.color_theme_id
+
+Table entity_merchandised_color {
+  merchandised_color_id bigserial [pk]
+  entity_id      bigserial [pk]
+}
+Ref: entities.id - entity_merchandised_color.entity_id
+Ref: merchandised_colors.id - entity_merchandised_color.merchandised_color_id
