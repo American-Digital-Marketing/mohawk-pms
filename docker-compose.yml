@@ -1,0 +1,50 @@
+services:
+  postgres:
+    image: postgres:18.1
+    container_name: postgres
+    volumes:
+      - postgresql:/var/lib/postgresql
+      - ./initdb.d:/docker-entrypoint-initdb.d # HOST_PATH:CONTAINER_PATH
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "9876:5432" # HOST_PORT:CONTAINER_PORT
+    networks:
+      - postgres_network
+
+  pgadmin:
+    # see https://hub.docker.com/r/dpage/pgadmin4
+    image: dpage/pgadmin4:9.10
+    container_name: pgadmin
+    volumes:
+      - pgadmin_working_dir:/var/lib/pgadmin
+      - pgadmin_config_dir:/pgadmin4
+    env_file:
+      - .env
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      - postgres
+    ports:
+      - "9877:80" # HOST_PORT:CONTAINER_PORT
+    networks:
+      - postgres_network
+
+volumes:
+  postgresql:
+    driver: local
+  pgadmin_working_dir:
+    driver: local
+  pgadmin_config_dir:
+    driver: local
+
+networks:
+  postgres_network:
+     driver: bridge
