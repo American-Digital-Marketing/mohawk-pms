@@ -2,10 +2,10 @@
 anonymize=0
 
 # In a parameters list, end or start with the comma. Default: end
-comma=end
+comma=start
 
 # In insert statement, add a newline after each comma.
-comma-break=0
+comma-break=1
 
 # Output format: text or html. Default: text.
 format=text

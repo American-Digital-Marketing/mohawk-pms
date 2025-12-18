@@ -1,4 +1,19 @@
 services:
+  # deno-app:
+  #   image: denoland/deno:latest
+  #   working_dir: /app
+  #   volumes:
+  #     - ./app:/app
+  #     - /home/morgan/.cache/deno:/deno-dir
+  #   ports:
+  #     - "8000:8000"
+  #   environment:
+  #     - DENO_ENV=development
+  #     - DENO_DIR=/deno-dir
+  #   command: ["deno", "run", "--watch", "--allow-net", "--allow-read", "main.ts"]
+
+  # pgAdmin will connect via postgres:5432
+  # not localhost:9876!
   postgres:
     image: postgres:18.1
     container_name: postgres
@@ -47,4 +62,4 @@ volumes:
 
 networks:
   postgres_network:
-     driver: bridge
+    driver: bridge

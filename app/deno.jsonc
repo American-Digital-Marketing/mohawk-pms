@@ -1,0 +1,27 @@
+{
+  "tasks": {
+    "dev": "deno run --env-file --watch --allow-net --allow-env --allow-read main.ts",
+    "start": "deno run --allow-net --allow-env --allow-read main.ts"
+  },
+  "imports": {
+    // "@std/http": "jsr:@std/http@^1.0.0",
+    // "@std/path": "jsr:@std/path@^1.0.0",
+    "@std/csv": "jsr:@std/csv@^1.0.0",
+    "@std/": "jsr:@std/"
+  },
+  "compilerOptions": {
+    "strict": true,
+    "lib": ["deno.window", "deno.unstable"]
+  },
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 100,
+    "indentWidth": 2,
+    "semiColons": true
+  },
+  "lint": {
+    "rules": {
+      "tags": ["recommended"]
+    }
+  }
+}

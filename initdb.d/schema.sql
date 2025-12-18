@@ -20,196 +20,231 @@
 -- section_1 schemas_or_extensions
 CREATE SCHEMA IF NOT EXISTS adm;
 
+-- junction tables are compounds of the table names, ordered alphabetically
 -- section_2 base_tables
 -- 2.0 component tables
 -- ============================================
--- entities table
+-- entity table
 -- ============================================
-CREATE TABLE IF NOT EXISTS entities (
+CREATE TABLE IF NOT EXISTS entity (
+  -- WARN: change me back!
   id bigserial PRIMARY KEY
 );
 
 -- ============================================
--- color_swatches table
+-- color_swatch table
 -- ============================================
-CREATE TABLE IF NOT EXISTS color_swatches (
-  id bigserial PRIMARY KEY,
-  entity_id bigint NOT NULL UNIQUE,
-  merchandised_color_id bigint NOT NULL,
+CREATE TABLE IF NOT EXISTS color_swatch (
+  id uuid DEFAULT uuidv7 () PRIMARY KEY
+  , merchandised_color_id uuid NOT NULL -- do we need this?
+  , image_id uuid NOT NULL
 );
 
 -- ============================================
--- color_theme_primary_color table
+-- color_theme table
 -- ============================================
-CREATE TABLE IF NOT EXISTS color_theme_primary_color (
-  color_theme_id bigint NOT NULL,
-  primary_color_id bigint NOT NULL,
-  PRIMARY KEY (color_theme_id, primary_color_id),
+CREATE TABLE IF NOT EXISTS color_theme (
+  id uuid DEFAULT uuidv7 () PRIMARY KEY
+  , name text NOT NULL UNIQUE
 );
 
 -- ============================================
--- color_themes table
+-- currency table
 -- ============================================
-CREATE TABLE IF NOT EXISTS color_themes (
-  id bigserial PRIMARY KEY,
-  name text NOT NULL UNIQUE
+CREATE TABLE IF NOT EXISTS currency (
+  id uuid DEFAULT uuidv7 () PRIMARY KEY
+  , code text NOT NULL UNIQUE
 );
 
 -- ============================================
--- currencies table
+-- description table
 -- ============================================
-CREATE TABLE IF NOT EXISTS currencies (
-  id bigserial PRIMARY KEY,
-  code text NOT NULL UNIQUE
+CREATE TABLE IF NOT EXISTS description (
+  id uuid DEFAULT uuidv7 () PRIMARY KEY
+  , contents text NOT NULL UNIQUE
 );
 
 -- ============================================
--- descriptions table
+-- discontinued_product table
 -- ============================================
-CREATE TABLE IF NOT EXISTS descriptions (
-  id bigserial PRIMARY KEY,
-  entity_id bigint NOT NULL,
-  contents text NOT NULL,
+CREATE TABLE IF NOT EXISTS discontinued_product (
+  entity_id bigint PRIMARY KEY
 );
 
 -- ============================================
--- discontinued_products table
+-- entity_color_swatch table
 -- ============================================
-CREATE TABLE IF NOT EXISTS discontinued_products (
-  entity_id bigint PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS entity_color_swatch (
+  entity_id bigint NOT NULL
+  , color_swatch_id uuid NOT NULL
+  , PRIMARY KEY (entity_id , color_swatch_id)
 );
 
 -- ============================================
 -- entity_color_theme table
 -- ============================================
 CREATE TABLE IF NOT EXISTS entity_color_theme (
-  entity_id bigint NOT NULL,
-  color_theme_id bigint NOT NULL,
-  PRIMARY KEY (entity_id, color_theme_id),
+  entity_id bigint NOT NULL
+  , color_theme_id uuid NOT NULL
+  , PRIMARY KEY (entity_id , color_theme_id)
+);
+
+-- ============================================
+-- entity_description table
+-- ============================================
+CREATE TABLE IF NOT EXISTS entity_description (
+  entity_id bigint NOT NULL
+  , description_id uuid NOT NULL
+  , PRIMARY KEY (entity_id , description_id)
 );
 
 -- ============================================
 -- entity_feature table
 -- ============================================
 CREATE TABLE IF NOT EXISTS entity_feature (
-  entity_id bigint NOT NULL,
-  feature_id bigint NOT NULL,
-  PRIMARY KEY (entity_id, feature_id),
+  entity_id bigint NOT NULL
+  , feature_id uuid NOT NULL
+  , PRIMARY KEY (entity_id , feature_id)
+);
+
+-- ============================================
+-- entity_image table
+-- ============================================
+CREATE TABLE IF NOT EXISTS entity_image (
+  entity_id bigint NOT NULL
+  , sort_order integer NOT NULL
+  , image_id uuid NOT NULL
+  , PRIMARY KEY (entity_id , image_id)
 );
 
 -- ============================================
 -- entity_merchandised_color table
 -- ============================================
 CREATE TABLE IF NOT EXISTS entity_merchandised_color (
-  merchandised_color_id bigint NOT NULL,
-  entity_id bigint NOT NULL UNIQUE,
-  PRIMARY KEY (merchandised_color_id, entity_id),
+  merchandised_color_id uuid NOT NULL
+  , entity_id bigint NOT NULL UNIQUE
+  , PRIMARY KEY (entity_id , merchandised_color_id)
+);
+
+-- ============================================
+-- entity_pattern table
+-- ============================================
+CREATE TABLE IF NOT EXISTS entity_pattern (
+  entity_id bigint NOT NULL
+  , pattern_id uuid NOT NULL
+  , PRIMARY KEY (entity_id , pattern_id)
 );
 
 -- ============================================
 -- entity_primary_color table
 -- ============================================
 CREATE TABLE IF NOT EXISTS entity_primary_color (
-  entity_id bigint NOT NULL,
-  primary_color_id bigint NOT NULL,
-  PRIMARY KEY (entity_id, primary_color_id),
+  entity_id bigint NOT NULL
+  , primary_color_id uuid NOT NULL
+  , PRIMARY KEY (entity_id , primary_color_id)
 );
 
 -- ============================================
--- features table
+-- entity_style table
 -- ============================================
-CREATE TABLE IF NOT EXISTS features (
-  id bigserial PRIMARY KEY,
-  entity_id bigint NOT NULL,
+CREATE TABLE IF NOT EXISTS entity_style (
+  entity_id bigint NOT NULL
+  , style_id uuid NOT NULL
+  , PRIMARY KEY (entity_id , style_id)
 );
 
 -- ============================================
--- featured_images table
+-- feature table
 -- ============================================
-CREATE TABLE IF NOT EXISTS featured_images (
-  entity_id bigint NOT NULL,
-  image_id bigint NOT NULL,
-  PRIMARY KEY (entity_id, image_id),
+CREATE TABLE IF NOT EXISTS feature (
+  id uuid DEFAULT uuidv7 () PRIMARY KEY
+  , contents text NOT NULL UNIQUE
 );
 
 -- ============================================
--- files table
+-- featured_image table
 -- ============================================
-CREATE TABLE IF NOT EXISTS files (
-  id bigserial PRIMARY KEY,
-  source text NOT NULL UNIQUE
+CREATE TABLE IF NOT EXISTS featured_image (
+  entity_id bigint NOT NULL
+  , image_id uuid NOT NULL
+  , PRIMARY KEY (entity_id , image_id)
 );
 
 -- ============================================
--- images table
+-- file table
 -- ============================================
-CREATE TABLE IF NOT EXISTS images (
-  id bigserial PRIMARY KEY,
-  file_id bigint NOT NULL,
+CREATE TABLE IF NOT EXISTS file (
+  id uuid DEFAULT uuidv7 () PRIMARY KEY
+  , source text NOT NULL UNIQUE
 );
 
 -- ============================================
--- inventory_levels table
+-- image table
 -- ============================================
-CREATE TABLE IF NOT EXISTS inventory_levels (
-  id bigserial PRIMARY KEY,
-  entity_id bigint NOT NULL UNIQUE,
-  stock integer NOT NULL,
+CREATE TABLE IF NOT EXISTS image (
+  id uuid DEFAULT uuidv7 () PRIMARY KEY
+  , file_id uuid NOT NULL UNIQUE
 );
 
 -- ============================================
--- lifestyle_images table
+-- inventory table
 -- ============================================
-CREATE TABLE IF NOT EXISTS lifestyle_images (
-  entity_id bigint NOT NULL,
-  image_id bigint NOT NULL,
-  PRIMARY KEY (entity_id, image_id),
+CREATE TABLE IF NOT EXISTS inventory (
+  id uuid DEFAULT uuidv7 () PRIMARY KEY
+  , entity_id bigint NOT NULL UNIQUE
+  , stock integer NOT NULL
 );
 
 -- ============================================
--- merchandised_colors table
+-- lifestyle_image table
 -- ============================================
-CREATE TABLE IF NOT EXISTS merchandised_colors (
-  id bigserial PRIMARY KEY,
-  primary_color_id bigint NOT NULL,
-  color_theme_id bigint NOT NULL,
-  name text NOT NULL UNIQUE,
+CREATE TABLE IF NOT EXISTS lifestyle_image (
+  entity_id bigint NOT NULL
+  , image_id uuid NOT NULL
+  , PRIMARY KEY (entity_id , image_id)
 );
 
 -- ============================================
--- patterns table
+-- merchandised_color table
 -- ============================================
-CREATE TABLE IF NOT EXISTS patterns (
-  id bigserial PRIMARY KEY,
-  entity_id bigint NOT NULL UNIQUE,
-  name text NOT NULL UNIQUE,
+CREATE TABLE IF NOT EXISTS merchandised_color (
+  id uuid DEFAULT uuidv7 () PRIMARY KEY
+  , name text NOT NULL UNIQUE
 );
 
 -- ============================================
--- prices table
+-- pattern table
 -- ============================================
-CREATE TABLE IF NOT EXISTS prices (
-  id bigserial PRIMARY KEY,
-  entity_id bigint NOT NULL,
-  value integer NOT NULL,
-  currency_id bigint NOT NULL,
+CREATE TABLE IF NOT EXISTS pattern (
+  id uuid DEFAULT uuidv7 () PRIMARY KEY
+  , name text NOT NULL UNIQUE
 );
 
 -- ============================================
--- primary_colors table
+-- price table
 -- ============================================
-CREATE TABLE IF NOT EXISTS primary_colors (
-  id bigserial PRIMARY KEY,
-  name text NOT NULL UNIQUE
+CREATE TABLE IF NOT EXISTS price (
+  id uuid DEFAULT uuidv7 () PRIMARY KEY
+  , entity_id bigint NOT NULL UNIQUE
+  , value integer NOT NULL
+  , currency_id uuid NOT NULL
+  , UNIQUE (entity_id , currency_id)
 );
 
 -- ============================================
--- styles table
+-- primary_color table
 -- ============================================
-CREATE TABLE IF NOT EXISTS styles (
-  id bigserial PRIMARY KEY,
-  entity_id bigint NOT NULL UNIQUE,
-  name text NOT NULL UNIQUE,
+CREATE TABLE IF NOT EXISTS primary_color (
+  id uuid DEFAULT uuidv7 () PRIMARY KEY
+  , name text NOT NULL UNIQUE
+);
+
+-- ============================================
+-- style table
+-- ============================================
+CREATE TABLE IF NOT EXISTS style (
+  id uuid DEFAULT uuidv7 () PRIMARY KEY
+  , name text NOT NULL UNIQUE
 );
 
 -- section_3 columns
@@ -218,62 +253,55 @@ CREATE TABLE IF NOT EXISTS styles (
 DO $$
 BEGIN
   -- ============================================
-  -- color_swatches constraints
+  -- color_swatch constraints
   -- ============================================
-  -- color_swatches.entity_fk
+  -- color_swatch.merch_color_fk
   BEGIN
-    ALTER TABLE color_swatches
-      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entities (id);
+    ALTER TABLE color_swatch
+      ADD CONSTRAINT merch_color_fk FOREIGN KEY (merchandised_color_id) REFERENCES merchandised_color (id);
   EXCEPTION
     WHEN duplicate_object THEN
-      RAISE NOTICE 'Constraint color_swatches.entity_fk already exists';
+      RAISE NOTICE 'Constraint color_swatch.merch_color_fk already exists';
   END;
-  -- color_swatches.merch_color_fk
   BEGIN
-    ALTER TABLE color_swatches
-      ADD CONSTRAINT merch_color_fk FOREIGN KEY (merchandised_color_id) REFERENCES merchandised_colors (id);
+    ALTER TABLE color_swatch
+      ADD CONSTRAINT image_fk FOREIGN KEY (image_id) REFERENCES image (id);
   EXCEPTION
     WHEN duplicate_object THEN
-      RAISE NOTICE 'Constraint color_swatches.merch_color_fk already exists';
-  END;
-  -- ============================================
-  -- color_theme_primary_color constraints
-  -- ============================================
-  -- ctpc.theme_fk
-  BEGIN
-    ALTER TABLE color_theme_primary_color
-      ADD CONSTRAINT theme_fk FOREIGN KEY (color_theme_id) REFERENCES color_themes (id);
-  EXCEPTION
-    WHEN duplicate_object THEN
-      RAISE NOTICE 'Constraint color_theme_primary_color.theme_fk already exists';
-  END;
-  -- ctpc.primary_fk
-  BEGIN
-    ALTER TABLE color_theme_primary_color
-      ADD CONSTRAINT primary_fk FOREIGN KEY (primary_color_id) REFERENCES primary_colors (id);
-  EXCEPTION
-    WHEN duplicate_object THEN
-      RAISE NOTICE 'Constraint color_theme_primary_color.primary_fk already exists';
+      RAISE NOTICE 'Constraint color_swatch.image_fk already exists';
   END;
   -- ============================================
-  -- descriptions constraints
+  -- description constraints
+  -- ============================================
+  -- [none]
+  -- ============================================
+  -- discontinued_product constraints
   -- ============================================
   BEGIN
-    ALTER TABLE descriptions
-      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entities (id);
+    ALTER TABLE discontinued_product
+      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entity (id);
   EXCEPTION
     WHEN duplicate_object THEN
-      RAISE NOTICE 'Constraint descriptions.entity_fk already exists';
+      RAISE NOTICE 'Constraint discontinued_product.entity_fk already exists';
   END;
   -- ============================================
-  -- discontinued_products constraints
+  -- entity_color_swatch constraints
   -- ============================================
+  -- entity_color_swatch.entity_fk
   BEGIN
-    ALTER TABLE discontinued_products
-      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entities (id);
+    ALTER TABLE entity_color_swatch
+      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entity (id);
   EXCEPTION
     WHEN duplicate_object THEN
-      RAISE NOTICE 'Constraint discontinued_products.entity_fk already exists';
+      RAISE NOTICE 'Constraint entity_color_swatch.entity_fk already exists';
+  END;
+  -- entity_color_swatch.swatch_fk
+  BEGIN
+    ALTER TABLE entity_color_swatch
+      ADD CONSTRAINT swatch_fk FOREIGN KEY (color_swatch_id) REFERENCES color_swatch (id);
+  EXCEPTION
+    WHEN duplicate_object THEN
+      RAISE NOTICE 'Constraint entity_color_swatch.swatch_fk already exists';
   END;
   -- ============================================
   -- entity_color_theme constraints
@@ -281,7 +309,7 @@ BEGIN
   -- entity_color_theme.entity_fk
   BEGIN
     ALTER TABLE entity_color_theme
-      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entities (id);
+      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entity (id);
   EXCEPTION
     WHEN duplicate_object THEN
       RAISE NOTICE 'Constraint entity_color_theme.entity_fk already exists';
@@ -289,10 +317,29 @@ BEGIN
   -- entity_color_theme.theme_fk
   BEGIN
     ALTER TABLE entity_color_theme
-      ADD CONSTRAINT theme_fk FOREIGN KEY (color_theme_id) REFERENCES color_themes (id);
+      ADD CONSTRAINT theme_fk FOREIGN KEY (color_theme_id) REFERENCES color_theme (id);
   EXCEPTION
     WHEN duplicate_object THEN
       RAISE NOTICE 'Constraint entity_color_theme.theme_fk already exists';
+  END;
+  -- ============================================
+  -- entity_description constraints
+  -- ============================================
+  -- entity_description.entity_fk
+  BEGIN
+    ALTER TABLE entity_description
+      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entity (id);
+  EXCEPTION
+    WHEN duplicate_object THEN
+      RAISE NOTICE 'Constraint entity_description.entity_fk already exists';
+  END;
+  -- entity_description.description_fk
+  BEGIN
+    ALTER TABLE entity_description
+      ADD CONSTRAINT description_fk FOREIGN KEY (description_id) REFERENCES description (id);
+  EXCEPTION
+    WHEN duplicate_object THEN
+      RAISE NOTICE 'Constraint entity_description.description_fk already exists';
   END;
   -- ============================================
   -- entity_feature constraints
@@ -300,7 +347,7 @@ BEGIN
   -- entity_feature.entity_fk
   BEGIN
     ALTER TABLE entity_feature
-      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entities (id);
+      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entity (id);
   EXCEPTION
     WHEN duplicate_object THEN
       RAISE NOTICE 'Constraint entity_feature.entity_fk already exists';
@@ -308,10 +355,29 @@ BEGIN
   -- entity_feature.feature_fk
   BEGIN
     ALTER TABLE entity_feature
-      ADD CONSTRAINT feature_fk FOREIGN KEY (feature_id) REFERENCES features (id);
+      ADD CONSTRAINT feature_fk FOREIGN KEY (feature_id) REFERENCES feature (id);
   EXCEPTION
     WHEN duplicate_object THEN
       RAISE NOTICE 'Constraint entity_feature.feature_fk already exists';
+  END;
+  -- ============================================
+  -- entity_image constraints
+  -- ============================================
+  -- entity_image.entity_fk
+  BEGIN
+    ALTER TABLE entity_image
+      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entity (id);
+  EXCEPTION
+    WHEN duplicate_object THEN
+      RAISE NOTICE 'Constraint entity_image.entity_fk already exists';
+  END;
+  -- entity_image.image_fk
+  BEGIN
+    ALTER TABLE entity_image
+      ADD CONSTRAINT image_fk FOREIGN KEY (image_id) REFERENCES image (id);
+  EXCEPTION
+    WHEN duplicate_object THEN
+      RAISE NOTICE 'Constraint entity_image.image_fk already exists';
   END;
   -- ============================================
   -- entity_merchandised_color constraints
@@ -319,7 +385,7 @@ BEGIN
   -- entity_merchandised_color.entity_fk
   BEGIN
     ALTER TABLE entity_merchandised_color
-      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entities (id);
+      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entity (id);
   EXCEPTION
     WHEN duplicate_object THEN
       RAISE NOTICE 'Constraint entity_merchandised_color.entity_fk already exists';
@@ -327,10 +393,29 @@ BEGIN
   -- entity_merchandised_color.merch_fk
   BEGIN
     ALTER TABLE entity_merchandised_color
-      ADD CONSTRAINT merch_fk FOREIGN KEY (merchandised_color_id) REFERENCES merchandised_colors (id);
+      ADD CONSTRAINT merch_fk FOREIGN KEY (merchandised_color_id) REFERENCES merchandised_color (id);
   EXCEPTION
     WHEN duplicate_object THEN
       RAISE NOTICE 'Constraint entity_merchandised_color.merch_fk already exists';
+  END;
+  -- ============================================
+  -- entity_pattern constraints
+  -- ============================================
+  -- entity_pattern.entity_fk
+  BEGIN
+    ALTER TABLE entity_pattern
+      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entity (id);
+  EXCEPTION
+    WHEN duplicate_object THEN
+      RAISE NOTICE 'Constraint entity_pattern.entity_fk already exists';
+  END;
+  -- entity_pattern.pattern_fk
+  BEGIN
+    ALTER TABLE entity_pattern
+      ADD CONSTRAINT pattern_fk FOREIGN KEY (pattern_id) REFERENCES pattern (id);
+  EXCEPTION
+    WHEN duplicate_object THEN
+      RAISE NOTICE 'Constraint entity_pattern.pattern_fk already exists';
   END;
   -- ============================================
   -- entity_primary_color constraints
@@ -338,7 +423,7 @@ BEGIN
   -- entity_primary_color.entity_fk
   BEGIN
     ALTER TABLE entity_primary_color
-      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entities (id);
+      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entity (id);
   EXCEPTION
     WHEN duplicate_object THEN
       RAISE NOTICE 'Constraint entity_primary_color.entity_fk already exists';
@@ -346,137 +431,123 @@ BEGIN
   -- entity_primary_color.primary_fk
   BEGIN
     ALTER TABLE entity_primary_color
-      ADD CONSTRAINT primary_fk FOREIGN KEY (primary_color_id) REFERENCES primary_colors (id);
+      ADD CONSTRAINT primary_fk FOREIGN KEY (primary_color_id) REFERENCES primary_color (id);
   EXCEPTION
     WHEN duplicate_object THEN
       RAISE NOTICE 'Constraint entity_primary_color.primary_fk already exists';
   END;
   -- ============================================
-  -- features constraints
+  -- entity_style constraints
   -- ============================================
+  -- entity_style.entity_fk
   BEGIN
-    ALTER TABLE features
-      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entities (id);
+    ALTER TABLE entity_style
+      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entity (id);
   EXCEPTION
     WHEN duplicate_object THEN
-      RAISE NOTICE 'Constraint features.entity_fk already exists';
+      RAISE NOTICE 'Constraint entity_style.entity_fk already exists';
   END;
-  -- ============================================
-  -- featured_images constraints
-  -- ============================================
-  -- featured_images.entity_fk
+  -- entity_style.style_fk
   BEGIN
-    ALTER TABLE featured_images
-      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entities (id);
+    ALTER TABLE entity_style
+      ADD CONSTRAINT style_fk FOREIGN KEY (style_id) REFERENCES style (id);
   EXCEPTION
     WHEN duplicate_object THEN
-      RAISE NOTICE 'Constraint featured_images.entity_fk already exists';
+      RAISE NOTICE 'Constraint entity_style.style_fk already exists';
   END;
-  -- featured_images.image_fk
+  -- ============================================
+  -- feature constraints
+  -- ============================================
+  -- [none]
+  -- ============================================
+  -- featured_image constraints
+  -- ============================================
+  -- featured_image.entity_fk
   BEGIN
-    ALTER TABLE featured_images
-      ADD CONSTRAINT image_fk FOREIGN KEY (image_id) REFERENCES images (id);
+    ALTER TABLE featured_image
+      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entity (id);
   EXCEPTION
     WHEN duplicate_object THEN
-      RAISE NOTICE 'Constraint featured_images.image_fk already exists';
+      RAISE NOTICE 'Constraint featured_image.entity_fk already exists';
   END;
-  -- ============================================
-  -- images constraints
-  -- ============================================
+  -- featured_image.image_fk
   BEGIN
-    ALTER TABLE images
-      ADD CONSTRAINT file_fk FOREIGN KEY (file_id) REFERENCES files (id);
+    ALTER TABLE featured_image
+      ADD CONSTRAINT image_fk FOREIGN KEY (image_id) REFERENCES image (id);
   EXCEPTION
     WHEN duplicate_object THEN
-      RAISE NOTICE 'Constraint images.file_fk already exists';
+      RAISE NOTICE 'Constraint featured_image.image_fk already exists';
   END;
   -- ============================================
-  -- inventory_levels constraints
+  -- image constraints
   -- ============================================
   BEGIN
-    ALTER TABLE inventory_levels
-      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entities (id);
+    ALTER TABLE image
+      ADD CONSTRAINT file_fk FOREIGN KEY (file_id) REFERENCES file (id);
   EXCEPTION
     WHEN duplicate_object THEN
-      RAISE NOTICE 'Constraint inventory_levels.entity_fk already exists';
+      RAISE NOTICE 'Constraint image.file_fk already exists';
   END;
   -- ============================================
-  -- lifestyle_images constraints
-  -- ============================================
-  -- lifestyle_images.entity_fk
-  BEGIN
-    ALTER TABLE lifestyle_images
-      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entities (id);
-  EXCEPTION
-    WHEN duplicate_object THEN
-      RAISE NOTICE 'Constraint lifestyle_images.entity_fk already exists';
-  END;
-  -- lifestyle_images.image_fk
-  BEGIN
-    ALTER TABLE lifestyle_images
-      ADD CONSTRAINT image_fk FOREIGN KEY (image_id) REFERENCES images (id);
-  EXCEPTION
-    WHEN duplicate_object THEN
-      RAISE NOTICE 'Constraint lifestyle_images.image_fk already exists';
-  END;
-  -- ============================================
-  -- merchandised_colors constraints
-  -- ============================================
-  -- merchandised_colors.primary_fk
-  BEGIN
-    ALTER TABLE merchandised_colors
-      ADD CONSTRAINT primary_fk FOREIGN KEY (primary_color_id) REFERENCES primary_colors (id);
-  EXCEPTION
-    WHEN duplicate_object THEN
-      RAISE NOTICE 'Constraint merchandised_colors.primary_fk already exists';
-  END;
-  -- merchandised_colors.theme_fk
-  BEGIN
-    ALTER TABLE merchandised_colors
-      ADD CONSTRAINT theme_fk FOREIGN KEY (color_theme_id) REFERENCES color_themes (id);
-  EXCEPTION
-    WHEN duplicate_object THEN
-      RAISE NOTICE 'Constraint merchandised_colors.theme_fk already exists';
-  END;
-  -- ============================================
-  -- patterns constraints
+  -- inventory constraints
   -- ============================================
   BEGIN
-    ALTER TABLE patterns
-      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entities (id);
+    ALTER TABLE inventory
+      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entity (id);
   EXCEPTION
     WHEN duplicate_object THEN
-      RAISE NOTICE 'Constraint patterns.entity_fk already exists';
+      RAISE NOTICE 'Constraint inventory.entity_fk already exists';
   END;
   -- ============================================
-  -- prices constraints
+  -- lifestyle_image constraints
   -- ============================================
-  -- prices.entity_fk
+  -- lifestyle_image.entity_fk
   BEGIN
-    ALTER TABLE prices
-      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entities (id);
+    ALTER TABLE lifestyle_image
+      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entity (id);
   EXCEPTION
     WHEN duplicate_object THEN
-      RAISE NOTICE 'Constraint prices.entity_fk already exists';
+      RAISE NOTICE 'Constraint lifestyle_image.entity_fk already exists';
   END;
-  -- prices.currency_fk
+  -- lifestyle_image.image_fk
   BEGIN
-    ALTER TABLE prices
-      ADD CONSTRAINT currency_fk FOREIGN KEY (currency_id) REFERENCES currencies (id);
+    ALTER TABLE lifestyle_image
+      ADD CONSTRAINT image_fk FOREIGN KEY (image_id) REFERENCES image (id);
   EXCEPTION
     WHEN duplicate_object THEN
-      RAISE NOTICE 'Constraint prices.currency_fk already exists';
+      RAISE NOTICE 'Constraint lifestyle_image.image_fk already exists';
   END;
   -- ============================================
-  -- styles constraints
+  -- merchandised_color constraints
   -- ============================================
+  -- [none]
+  -- ============================================
+  -- pattern constraints
+  -- ============================================
+  -- [none]
+  -- ============================================
+  -- price constraints
+  -- ============================================
+  -- price.entity_fk
   BEGIN
-    ALTER TABLE styles
-      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entities (id);
+    ALTER TABLE price
+      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entity (id);
   EXCEPTION
     WHEN duplicate_object THEN
-      RAISE NOTICE 'Constraint styles.entity_fk already exists';
+      RAISE NOTICE 'Constraint price.entity_fk already exists';
   END;
+  -- price.currency_fk
+  BEGIN
+    ALTER TABLE price
+      ADD CONSTRAINT currency_fk FOREIGN KEY (currency_id) REFERENCES currency (id);
+  EXCEPTION
+    WHEN duplicate_object THEN
+      RAISE NOTICE 'Constraint price.currency_fk already exists';
+  END;
+  -- ============================================
+  -- style constraints
+  -- ============================================
+  -- [none]
   -- end constraint exception handling
 END
 $$;
