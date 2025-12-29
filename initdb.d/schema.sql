@@ -108,6 +108,15 @@ CREATE TABLE IF NOT EXISTS entity_feature (
 );
 
 -- ============================================
+-- entity_file table
+-- ============================================
+CREATE TABLE IF NOT EXISTS entity_file (
+  entity_id bigint NOT NULL
+  , file_id uuid NOT NULL
+  , PRIMARY KEY (entity_id , file_id)
+);
+
+-- ============================================
 -- entity_image table
 -- ============================================
 CREATE TABLE IF NOT EXISTS entity_image (
@@ -136,12 +145,30 @@ CREATE TABLE IF NOT EXISTS entity_pattern (
 );
 
 -- ============================================
+-- entity_price table
+-- ============================================
+CREATE TABLE IF NOT EXISTS entity_price (
+  entity_id bigint NOT NULL
+  , price_id uuid NOT NULL
+  , PRIMARY KEY (entity_id , price_id)
+);
+
+-- ============================================
 -- entity_primary_color table
 -- ============================================
 CREATE TABLE IF NOT EXISTS entity_primary_color (
   entity_id bigint NOT NULL
   , primary_color_id uuid NOT NULL
   , PRIMARY KEY (entity_id , primary_color_id)
+);
+
+-- ============================================
+-- entity_sku table
+-- ============================================
+CREATE TABLE IF NOT EXISTS entity_sku (
+  entity_id bigint NOT NULL
+  , sku_id uuid NOT NULL
+  , PRIMARY KEY (entity_id , sku_id)
 );
 
 -- ============================================
@@ -225,10 +252,9 @@ CREATE TABLE IF NOT EXISTS pattern (
 -- ============================================
 CREATE TABLE IF NOT EXISTS price (
   id uuid DEFAULT uuidv7 () PRIMARY KEY
-  , entity_id bigint NOT NULL UNIQUE
   , value integer NOT NULL
   , currency_id uuid NOT NULL
-  , UNIQUE (entity_id , currency_id)
+  , UNIQUE (value , currency_id)
 );
 
 -- ============================================
@@ -237,6 +263,14 @@ CREATE TABLE IF NOT EXISTS price (
 CREATE TABLE IF NOT EXISTS primary_color (
   id uuid DEFAULT uuidv7 () PRIMARY KEY
   , name text NOT NULL UNIQUE
+);
+
+-- ============================================
+-- sku table
+-- ============================================
+CREATE TABLE IF NOT EXISTS sku (
+  id uuid DEFAULT uuidv7 () PRIMARY KEY
+  , value text NOT NULL UNIQUE
 );
 
 -- ============================================
@@ -342,6 +376,25 @@ BEGIN
       RAISE NOTICE 'Constraint entity_description.description_fk already exists';
   END;
   -- ============================================
+  -- entity_file constraints
+  -- ============================================
+  -- entity_file.entity_fk
+  BEGIN
+    ALTER TABLE entity_file
+      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entity (id);
+  EXCEPTION
+    WHEN duplicate_object THEN
+      RAISE NOTICE 'Constraint entity_file.entity_fk already exists';
+  END;
+  -- entity_file.file_fk
+  BEGIN
+    ALTER TABLE entity_file
+      ADD CONSTRAINT file_fk FOREIGN KEY (file_id) REFERENCES file (id);
+  EXCEPTION
+    WHEN duplicate_object THEN
+      RAISE NOTICE 'Constraint entity_file.file_fk already exists';
+  END;
+  -- ============================================
   -- entity_feature constraints
   -- ============================================
   -- entity_feature.entity_fk
@@ -418,6 +471,25 @@ BEGIN
       RAISE NOTICE 'Constraint entity_pattern.pattern_fk already exists';
   END;
   -- ============================================
+  -- entity_price constraints
+  -- ============================================
+  -- entity_price.entity_fk
+  BEGIN
+    ALTER TABLE entity_price
+      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entity (id);
+  EXCEPTION
+    WHEN duplicate_object THEN
+      RAISE NOTICE 'Constraint entity_price.entity_fk already exists';
+  END;
+  -- entity_price.primary_fk
+  BEGIN
+    ALTER TABLE entity_price
+      ADD CONSTRAINT primary_fk FOREIGN KEY (price_id) REFERENCES price (id);
+  EXCEPTION
+    WHEN duplicate_object THEN
+      RAISE NOTICE 'Constraint entity_price.primary_fk already exists';
+  END;
+  -- ============================================
   -- entity_primary_color constraints
   -- ============================================
   -- entity_primary_color.entity_fk
@@ -435,6 +507,25 @@ BEGIN
   EXCEPTION
     WHEN duplicate_object THEN
       RAISE NOTICE 'Constraint entity_primary_color.primary_fk already exists';
+  END;
+  -- ============================================
+  -- entity_sku constraints
+  -- ============================================
+  -- entity_sku.entity_fk
+  BEGIN
+    ALTER TABLE entity_sku
+      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entity (id);
+  EXCEPTION
+    WHEN duplicate_object THEN
+      RAISE NOTICE 'Constraint entity_sku.entity_fk already exists';
+  END;
+  -- entity_sku.sku_fk
+  BEGIN
+    ALTER TABLE entity_sku
+      ADD CONSTRAINT sku_fk FOREIGN KEY (sku_id) REFERENCES sku (id);
+  EXCEPTION
+    WHEN duplicate_object THEN
+      RAISE NOTICE 'Constraint entity_sku.sku_fk already exists';
   END;
   -- ============================================
   -- entity_style constraints
@@ -528,14 +619,6 @@ BEGIN
   -- ============================================
   -- price constraints
   -- ============================================
-  -- price.entity_fk
-  BEGIN
-    ALTER TABLE price
-      ADD CONSTRAINT entity_fk FOREIGN KEY (entity_id) REFERENCES entity (id);
-  EXCEPTION
-    WHEN duplicate_object THEN
-      RAISE NOTICE 'Constraint price.entity_fk already exists';
-  END;
   -- price.currency_fk
   BEGIN
     ALTER TABLE price
